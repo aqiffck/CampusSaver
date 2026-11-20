@@ -1,0 +1,12 @@
+config.txt
+ai_log.txt
+transactions.txt
+budget_config.txt
+goals.txt
+currencies.txt
+Monthly_Financial_Statement.txt
+/build/
+/dist/
+/nbproject/private/
+*.class
+.DS_Store
