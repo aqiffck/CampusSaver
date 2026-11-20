@@ -1,10 +1,10 @@
 package campussaver.model;
 
 public abstract class Transaction {
-    private String id;
-    private double amount;
-    private String date;
-    private String description;
+    private final String id;
+private final double amount;
+private final String date;
+private final String description;
 
     public Transaction(String id, double amount, String date, String description) {
         this.id = id;
