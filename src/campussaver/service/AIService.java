@@ -3,25 +3,24 @@ package campussaver.service;
 import campussaver.exception.AIServiceException;
 import campussaver.model.ExpenseTransaction;
 import campussaver.model.StudentUser;
-import java.util.List;
+import campussaver.model.Transaction;
 
 public class AIService {
 
-    /**
-     * Calculates the percentage of total spending allocated to academic necessities.
-     */
-    public double calculateAcademicRatio(List<ExpenseTransaction> transactions) throws AIServiceException {
-        if (transactions == null || transactions.isEmpty()) {
+    public double calculateAcademicRatio(Transaction[] transactions, int count) throws AIServiceException {
+        if (transactions == null || count <= 0) {
             throw new AIServiceException("Insufficient data: Transaction history is empty.");
         }
 
         double totalSpent = 0.0;
         double academicSpent = 0.0;
 
-        for (ExpenseTransaction t : transactions) {
-            totalSpent += t.getAmount();
-            if (t.isVerifiedAcademic()) {
-                academicSpent += t.getAmount();
+        for (int i = 0; i < count; i++) {
+            if (transactions[i] instanceof ExpenseTransaction t) {
+                totalSpent += t.getAmount();
+                if (t.isVerifiedAcademic()) {
+                    academicSpent += t.getAmount();
+                }
             }
         }
 
@@ -32,11 +31,8 @@ public class AIService {
         return (academicSpent / totalSpent) * 100.0;
     }
 
-    /**
-     * Estimates remaining runway days based on daily spending velocity.
-     */
-    public int calculateRemainingRunwayDays(StudentUser user, List<ExpenseTransaction> transactions, int daysPassedInMonth) throws AIServiceException {
-        if (transactions == null || transactions.isEmpty()) {
+    public int calculateRemainingRunwayDays(StudentUser user, Transaction[] transactions, int count, int daysPassedInMonth) throws AIServiceException {
+        if (transactions == null || count <= 0) {
             throw new AIServiceException("Cannot estimate runway: No transaction records found.");
         }
         if (daysPassedInMonth <= 0) {
@@ -44,8 +40,10 @@ public class AIService {
         }
 
         double totalSpent = 0.0;
-        for (ExpenseTransaction t : transactions) {
-            totalSpent += t.getAmount();
+        for (int i = 0; i < count; i++) {
+            if (transactions[i] instanceof ExpenseTransaction t) {
+                totalSpent += t.getAmount();
+            }
         }
 
         double remainingBudget = user.getMonthlyBudgetLimit() - totalSpent;
@@ -61,12 +59,9 @@ public class AIService {
         return (int) (remainingBudget / dailyVelocity);
     }
 
-    /**
-     * Generates tailored financial advice based on spending pattern analysis.
-     */
-    public String generateFinancialAdvice(StudentUser user, List<ExpenseTransaction> transactions, int daysPassedInMonth) throws AIServiceException {
-        double academicRatio = calculateAcademicRatio(transactions);
-        int runwayDays = calculateRemainingRunwayDays(user, transactions, daysPassedInMonth);
+    public String generateFinancialAdvice(StudentUser user, Transaction[] transactions, int count, int daysPassedInMonth) throws AIServiceException {
+        double academicRatio = calculateAcademicRatio(transactions, count);
+        int runwayDays = calculateRemainingRunwayDays(user, transactions, count, daysPassedInMonth);
 
         StringBuilder advice = new StringBuilder();
         advice.append("=== AI Financial Insight ===\n");

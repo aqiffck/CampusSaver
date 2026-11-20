@@ -1,7 +1,7 @@
 package campussaver.model;
 
 public abstract class Transaction {
-    private final String id;
+private final String id;
 private final double amount;
 private final String date;
 private final String description;
