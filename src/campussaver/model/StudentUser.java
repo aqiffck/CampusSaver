@@ -1,7 +1,7 @@
-package src.campussaver.model;
+package campussaver.model;
 
 public class StudentUser extends User {
-    private String livingType; //"HOSTEL" or "COMMUTER"
+    private String livingType; // "HOSTEL" or "COMMUTER"
     private boolean hasScholarship;
     private double monthlyBudgetLimit;
 
@@ -21,6 +21,4 @@ public class StudentUser extends User {
     public String getUserRole() {
         return "STUDENT";
     }
-}
-    
 }
