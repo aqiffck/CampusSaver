@@ -10,3 +10,5 @@ Monthly_Financial_Statement.txt
 /nbproject/private/
 *.class
 .DS_Store
+.classpath
+.vscode/
