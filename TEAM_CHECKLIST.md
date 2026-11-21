@@ -60,7 +60,7 @@ Do not start a Should feature until all Must features work offline.
 | :--- | :--- |
 | 1-3 | **Stage 1:** shared models in cents, `AdminUser`, `SavingsTransaction`, file formats (section 7) on `main` |
 | 4-7 | **Stage 2:** services in parallel. Must features work offline by Day 7. |
-| 8-14 | **Stage 3:** CLI wiring, role menus, EN/MS, F4, F6. **Code freeze on Day 14** except bug fixes. |
+| 8-14 | **Stage 3:** CLI wiring, role menus, F4, F6. **Code freeze on Day 14** except bug fixes. |
 | 15-17 | **Stage 4:** full-team tests, rule checks (section 6) |
 | 18-19 | Docs, SDG text, pitch and demo script, submit with buffer |
 
