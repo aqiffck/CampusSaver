@@ -16,7 +16,6 @@
   - `readNonEmpty(Scanner, String prompt)`
   - `readYesNo(Scanner, String prompt)`
   - Each loops until the input is valid.
-- [ ] `Messages`: `get(String key, String lang)` for `"EN"` and `"MS"`. Put every menu line and prompt in here, so switching language changes everything.
 
 ## Part 3: CurrencyService
 - [ ] `loadRates()` reads `data/rates.txt` (`MYR|1.0000`). If the file is missing, create it with defaults (MYR, USD, SGD).
@@ -39,8 +38,7 @@
 6. Runway and survival plan (F5, Member 4)
 7. Savings goals (F4)
 8. Sponsor report (F6, Member 4)
-9. Change language
-0. Save and exit
+9. Save and exit
 
 **Admin:** list users, add or remove a user, edit split templates, edit currency rates, aggregate stats (totals only, no individual transactions), save and exit.
 
