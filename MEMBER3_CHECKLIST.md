@@ -1,6 +1,6 @@
 # Member 3: Scanner CLI, Safe Input and Currency
 
-**Files:** `main/CampusSaverApp.java`, `util/InputHelper.java`, `util/Money.java`, `service/CurrencyService.java`
+**Files:** `main/CampusSaverApp.java`, `util/InputHelper.java`, `util/Money.java`
 **Branch:** `feature/member3-cli-ui`
 **Rule:** The menu must never crash on letters, empty input, negative or huge numbers, or on `LowRunwayException` and `AIServiceException`.
 
@@ -17,11 +17,9 @@
   - `readYesNo(Scanner, String prompt)`
   - Each loops until the input is valid.
 
-## Part 3: CurrencyService
-- [ ] `loadRates()` reads `data/rates.txt` (`MYR|1.0000`). If the file is missing, create it with defaults (MYR, USD, SGD).
-- [ ] `long convert(long cents, String from, String to)`. Unknown currency returns the original cents and a notice.
-- [ ] Admin can update a rate and save the file.
-- [ ] Live fetching stays Stretch, only if the lecturer approves.
+## Part 3: Currency (written by Member 4)
+- [ ] Do not write `CurrencyService`. Member 4 provides `loadRates()`, `convert(long cents, String from, String to)`, `setRate(String code, String rateText)`, `getCodes()` and `getCount()`.
+- [ ] Call `loadRates()` at startup. Use `convert(...)` for the currency switch in the Student summary, and `setRate(...)` for the Admin "edit currency rates" option.
 
 ## Part 4: Startup and login
 - [ ] Create all services and one `Scanner`. Load users, transactions, goals, budgets and templates through `FileService`, and set the loaded counts.
@@ -52,5 +50,5 @@
 ## Part 6: Test and push
 - [ ] Compile: `javac --release 17 -d out src/campussaver/*/*.java`
 - [ ] Type `abc`, empty, `-5`, `99999999999` into every prompt. Zero crashes.
-- [ ] Test each role sees only its own menu.
+- [ ] Compile (Windows PowerShell): `javac --release 17 -d out (Get-ChildItem -Recurse src -Filter *.java).FullName`
 - [ ] Push your own files only and open a PR.
