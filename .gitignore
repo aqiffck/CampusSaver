@@ -1,14 +1,18 @@
+# Secrets (never commit)
 config.txt
+
+# Runtime data and logs (created when the app runs)
+data/
 ai_log.txt
-transactions.txt
-budget_config.txt
-goals.txt
-currencies.txt
-Monthly_Financial_Statement.txt
+
+# Compiled output
+out/
 /build/
 /dist/
-/nbproject/private/
 *.class
-.DS_Store
+
+# IDE and OS files
+/nbproject/private/
 .classpath
 .vscode/
+.DS_Store
