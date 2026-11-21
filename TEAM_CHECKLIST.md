@@ -103,7 +103,7 @@ Do not start a Should feature until all Must features work offline.
   javac --release 17 -d out (Get-ChildItem -Recurse src -Filter *.java).FullName
 
   Mac/Linux:
-  javac --release 17 -d out src/campussaver/*/*.java
+  javac --release 17 -d out (Get-ChildItem -Recurse src -Filter *.java).FullName
   ```
   0 errors.
 - [ ] **No collections:** search `src/` for `ArrayList`, `LinkedList`, `HashMap`, `HashSet`, `java.util.List`. 0 matches.
