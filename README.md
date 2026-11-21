@@ -77,8 +77,8 @@ Main: CampusSaverApp
 2. Copy `config.example.txt` to `config.txt` in the project root, then fill it in:
    ```
    API_KEY=your_key_here
-   API_URL=<ILMUCode endpoint>
-   API_MODEL=<model name>
+   
+   API_MODEL=<Gemini model name from Google AI Studio>
    ```
    Without a valid key the app still works, using fallback text.
 3. Compile from the project root:
