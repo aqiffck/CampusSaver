@@ -48,7 +48,7 @@
 - [ ] Use classic casts, not `instanceof` patterns.
 
 ## Part 6: Test and push
-- [ ] Compile: `javac --release 17 -d out src/campussaver/*/*.java`
+- [ ] Compile (Windows PowerShell): `javac --release 17 -d out (Get-ChildItem -Recurse src -Filter *.java).FullName`
 - [ ] Type `abc`, empty, `-5`, `99999999999` into every prompt. Zero crashes.
 - [ ] Compile (Windows PowerShell): `javac --release 17 -d out (Get-ChildItem -Recurse src -Filter *.java).FullName`
 - [ ] Push your own files only and open a PR.
