@@ -41,7 +41,7 @@ Rules for all files:
 - [ ] Every method catches `IOException` and prints a clear message. Never throws out of the class.
 
 ## Part 4: Test and push
-- [ ] Compile: `javac --release 17 -d out src/campussaver/*/*.java`
+- [ ] Compile (Windows PowerShell): `javac --release 17 -d out (Get-ChildItem -Recurse src -Filter *.java).FullName`
 - [ ] Write a small test: save, reload and compare user and transaction counts. Add a line with a missing column and confirm it is skipped.
 - [ ] Zero collection imports.
 - [ ] `git add` your own files only, commit, push, open a PR, and tell Members 2 and 3 once `AdminUser` and `FileService` are merged.
