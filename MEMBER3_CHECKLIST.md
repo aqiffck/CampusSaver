@@ -1,6 +1,6 @@
-# Member 3: Scanner CLI, Safe Input, Languages and Currency
+# Member 3: Scanner CLI, Safe Input and Currency
 
-**Files:** `main/CampusSaverApp.java`, `util/InputHelper.java`, `util/Messages.java`, `util/Money.java`, `service/CurrencyService.java`
+**Files:** `main/CampusSaverApp.java`, `util/InputHelper.java`, `util/Money.java`, `service/CurrencyService.java`
 **Branch:** `feature/member3-cli-ui`
 **Rule:** The menu must never crash on letters, empty input, negative or huge numbers, or on `LowRunwayException` and `AIServiceException`.
 
@@ -26,7 +26,7 @@
 ## Part 4: Startup and login
 - [ ] Create all services and one `Scanner`. Load users, transactions, goals, budgets and templates through `FileService`, and set the loaded counts.
 - [ ] First run: register a student (name, HOSTEL or COMMUTER, scholarship Y/N, monthly budget) and offer to create an admin.
-- [ ] Returning run: list accounts, pick one, or register a new account. Language is chosen on registration and can be changed from the menu.
+- [ ] Returning run: list accounts, pick one, or register a new account.
 
 ## Part 5: Menus per role (call the services, keep logic out of the menu)
 **Student**
@@ -52,5 +52,5 @@
 ## Part 6: Test and push
 - [ ] Compile: `javac --release 17 -d out src/campussaver/*/*.java`
 - [ ] Type `abc`, empty, `-5`, `99999999999` into every prompt. Zero crashes.
-- [ ] Test both languages on every screen. Test each role sees only its own menu.
+- [ ] Test each role sees only its own menu.
 - [ ] Push your own files only and open a PR.
