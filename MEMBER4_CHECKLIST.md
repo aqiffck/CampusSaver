@@ -1,94 +1,48 @@
-# Member 4 Coding Checklist — `AIHelper` HTTP Engine & `AIService` Integration
+# Member 4: AI Engine, Budget Setup (F1), Predictor (F2), Runway (F5), Sponsor Report (F6)
 
-**Your Files:**
-1. `[NEW]` `src/campussaver/service/AIHelper.java`
-2. `[UPDATE]` `src/campussaver/service/AIService.java`
+**Files:** `service/AIHelper.java`, `service/AIService.java`, `service/BudgetService.java`, `service/PredictorService.java`, `model/BudgetPlan.java`
+**Branch:** `feature/member4-ai-integration`
+**Rules:** All AI goes through `AIHelper.ask(String)`. Java calculates every number. The AI only writes tips, plans and wording. Money is `long cents`.
 
-**Your Branch Name:** `feature/member4-ai-integration`  
-**Good News from `feb1c9b`:** `AIService.java` already uses plain arrays (`Transaction[] transactions, int count`)! Now your job is connecting real HTTP AI calls via `AIHelper.ask(String)` + `config.txt` + `data/ai_log.txt` + graceful `AIServiceException` offline fallback.
+## Part 1: Start
+- [ ] `git checkout main && git pull origin main`, then `git checkout -b feature/member4-ai-integration`
+- [ ] Read `config.example.txt`, confirm `config.txt` and `data/` are gitignored. Never commit a key.
 
----
+## Part 2: AIHelper (do this first, it is the biggest risk)
+- [ ] `public static String ask(String prompt) throws AIServiceException`
+- [ ] Read `config.txt` with `BufferedReader` (ignore blank and `#` lines, split at the first `=`): `API_KEY` (required), `API_URL`, `API_MODEL` (optional, ILMUCode defaults).
+  - Missing file, blank key or the placeholder key: log a notice and throw `AIServiceException`.
+- [ ] Build the JSON body with string methods only, escaping `\`, `"`, newline, `\r`, tab. No Gson, Jackson or org.json.
+- [ ] `HttpURLConnection`: POST, 10 s connect and 15 s read timeouts, `Content-Type`, `Authorization: Bearer <key>`, `setDoOutput(true)`.
+- [ ] Non-2xx response: log it and throw `AIServiceException("AI HTTP error: <code>")`.
+- [ ] Parse the reply with `indexOf` and `substring`: find `"choices"`, then `"content"`, skip to the opening quote, scan to the unescaped closing quote, handle `\"`, `\\`, `\n`, `\t`. If it fails, throw `AIServiceException`.
+- [ ] `IOException` (offline or timeout): log it and throw `AIServiceException`.
+- [ ] Log every reply shown to a user to `data/ai_log.txt`, with timestamp, feature and reply, one line per entry. Never log the key.
 
-## Part 1: Before You Start
-- [ ] Run `git checkout main && git pull origin main`
-- [ ] Create your branch: `git checkout -b feature/member4-ai-integration`
-- [ ] Read:
-  - `config.example.txt` (`API_KEY=your_actual_api_key_here`)
-  - `.gitignore` (verify `config.txt` is ignored — NEVER commit real API keys!)
-  - `src/campussaver/service/AIService.java`
-  - `src/campussaver/exception/AIServiceException.java`
+## Part 3: BudgetPlan and BudgetService (F1)
+- [ ] `BudgetPlan`: `userId`, categories array, percents array, size. Methods: `add(category, percent)`, `getSize()`, `getCategory(i)`, `getPercent(i)`, `getUserId()`, `total()`.
+- [ ] `buildFromAI(StudentUser u)`: ask the AI for `category:percent` lines, parse them, then validate in Java:
+  - Every category is known, every percent is a whole number from 0 to 100, and the total is exactly 100.
+  - Any failure, or `AIServiceException`: use the default split from `templates.txt` for the user's `livingType`.
+- [ ] `totalsHundred(BudgetPlan p)`.
 
----
+## Part 4: PredictorService (F2 and F5, pure Java)
+- [ ] `LOW_RUNWAY_DAYS = 14`.
+- [ ] `projectedMonthEnd(spentCents, daysPassed)`, `isOverspending(u, spentCents, daysPassed)`, `remainingRunwayDays(u, spentCents, daysPassed)`.
+  - Guard `daysPassed <= 0`.
+  - No spending means a high runway, with no division by zero.
 
-## Part 2: Build `AIHelper.java` (Strict WIX1002 Rules)
-Create `src/campussaver/service/AIHelper.java` (`package campussaver.service;`).
+## Part 5: AIService (wording only, each method has a fallback)
+- [ ] `tipsPrompt(...)` and a fallback tip text (the existing rule-based text can be reused).
+- [ ] `survivalPlanPrompt(...)`: no unhealthy advice (never skipping meals), point to the university financial aid office, end with "General guidance, not financial advice." Fallback text has the same content.
+- [ ] `sponsorWordingPrompt(...)`: give the AI only the figures Java calculated (academic, personal, total) and tell it not to change them. Java builds the report numbers and saves it with `FileService.saveReport`.
+- [ ] Every method catches `AIServiceException` and returns the fallback. Replace `instanceof` patterns with classic casts.
+- [ ] Prompts ask for the reply in the user's language (English or Malay).
 
-### A. Read API Config from `config.txt`
-- [ ] Read `config.txt` line by line using `BufferedReader` / `FileReader` (ignore lines starting with `#` or blank lines).
-- [ ] Split each line at the first `=` (`int eq = line.indexOf('=')`) to load:
-  - `API_KEY` (required)
-  - `API_URL` (optional, default e.g. `"https://api.ilmu.ai/v1/chat/completions"` for ILMU/OpenAI-compatible)
-  - `API_MODEL` (optional, default e.g. `"ilmu-chat"`)
-- [ ] If `config.txt` is missing, `API_KEY` is blank, or `API_KEY` equals `"your_actual_api_key_here"`, log an offline notice to `data/ai_log.txt` and throw `new AIServiceException("AI API key not configured in config.txt.")`.
-
-### B. `public String ask(String prompt) throws AIServiceException`
-- [ ] Escape special characters in `prompt` manually using pure `String` (`\`, `"`, `\n`, `\r`, `\t`) — **NO Gson, Jackson, or org.json libraries!**
-- [ ] Build the JSON request body string manually:
-  ```java
-  String jsonBody = "{\"model\":\"" + escapeJson(model) + "\",\"messages\":[{\"role\":\"user\",\"content\":\"" + escapeJson(prompt) + "\"}]}";
-  ```
-- [ ] Open `java.net.HttpURLConnection`:
-  - `conn.setRequestMethod("POST");`
-  - `conn.setConnectTimeout(10000);` / `conn.setReadTimeout(15000);`
-  - `conn.setRequestProperty("Content-Type", "application/json; charset=UTF-8");`
-  - `conn.setRequestProperty("Authorization", "Bearer " + apiKey);`
-  - `conn.setDoOutput(true);` -> write `jsonBody.getBytes(StandardCharsets.UTF_8)`.
-- [ ] Check `int status = conn.getResponseCode();`. If `< 200 || >= 300`, read `conn.getErrorStream()`, log failure to `data/ai_log.txt`, and throw `new AIServiceException("AI HTTP error: " + status)`.
-- [ ] Read full response text from `conn.getInputStream()`.
-- [ ] **Parse `"content"` using `indexOf` & `substring` ONLY:**
-  - Locate `"choices"` -> locate `"content"` -> advance past `:` and opening `"` -> scan character-by-character until unescaped closing `"` (handling `\"`, `\\`, `\n`, `\t`).
-  - If `"content"` cannot be parsed, throw `new AIServiceException("Unable to parse AI response text.")`.
-- [ ] **Log every reply to `data/ai_log.txt`:**
-  - Ensure `data/` directory exists (`new File("data").mkdirs()`).
-  - Append timestamp, prompt summary, and full AI reply using `new FileWriter("data/ai_log.txt", true)`.
-  - **NEVER** write `apiKey` into `ai_log.txt`!
-- [ ] Wrap `IOException` (no internet / timeout) -> log offline notice to `data/ai_log.txt` and throw `new AIServiceException("AI service unreachable (offline).")`.
-
----
-
-## Part 3: Connect `AIHelper` Inside `AIService.java` (With Offline Fallback!)
-Open `src/campussaver/service/AIService.java`:
-- [ ] Add field: `private final AIHelper aiHelper = new AIHelper();`
-- [ ] Keep `calculateAcademicRatio(Transaction[] transactions, int count)` and `calculateRemainingRunwayDays(...)` math **unchanged**!
-- [ ] Optionally add a helper `calculateTotalSavings(Transaction[] transactions, int count)` (summing `SavingsTransaction` amounts) so the AI knows how much spare change the student saved.
-- [ ] Inside `generateFinancialAdvice(StudentUser user, Transaction[] transactions, int count, int daysPassedInMonth)`:
-  1. Keep building the existing math report (`localAdvice`) first (`Academic Spending Ratio`, `Estimated Runway`, rule-based status).
-  2. Build a concise plain-text prompt containing the student's `livingType`, `hasScholarship`, `monthlyBudgetLimit`, `academicRatio`, `runwayDays`, and `totalSavings`.
-  3. Call `aiHelper.ask(prompt)` inside `try/catch`:
-     ```java
-     try {
-         String aiTip = aiHelper.ask(prompt);
-         advice.append("\n\n--- AI Coach Recommendation ---\n").append(aiTip);
-     } catch (AIServiceException e) {
-         advice.append("\n\n[Offline Fallback] ").append(e.getMessage())
-               .append(" Showing local CampusSaver calculation above.");
-     }
-     ```
-  4. Keep `if (transactions == null || count <= 0)` throwing `AIServiceException` as it already does when there is no transaction data at all!
-
----
-
-## Part 4: Self-Test (Both Offline & Online!) & Push
-- [ ] Compile cleanly from `CampusSaver/` root:
-  ```bash
-  javac --release 17 -d out src/campussaver/exception/*.java src/campussaver/model/*.java src/campussaver/service/AIHelper.java src/campussaver/service/AIService.java
-  ```
-- [ ] **Test Offline Fallback:** Without `config.txt`, call `generateFinancialAdvice(...)` with sample `ExpenseTransaction[]` -> confirm **zero crash**, fallback message prints, and `data/ai_log.txt` records the offline log.
-- [ ] **Test Online AI:** Copy `config.example.txt` -> `config.txt`, paste real API key, run again -> confirm real AI advice prints AND appends to `data/ai_log.txt`.
-- [ ] **Security Check:** Run `git status` and verify `config.txt` does **NOT** appear as untracked/staged!
-- [ ] Commit & push ONLY `AIHelper.java` and `AIService.java`:
-  ```bash
-  git add src/campussaver/service/AIHelper.java src/campussaver/service/AIService.java
-  git commit -m "Add AIHelper HTTP client with ai_log.txt and connect AIService fallback"
-  git push -u origin feature/member4-ai-integration
-  ```
+## Part 6: Test and push
+- [ ] Compile: `javac --release 17 -d out src/campussaver/*/*.java`
+- [ ] Offline test: no `config.txt` gives a fallback, no crash, and a notice in `ai_log.txt`.
+- [ ] Online test: a real key gives a real reply, which is logged.
+- [ ] Bad split test: force a reply that totals 90 and confirm the template is used.
+- [ ] `git status` shows `config.txt` untracked and ignored.
+- [ ] Push your own files only and open a PR.
