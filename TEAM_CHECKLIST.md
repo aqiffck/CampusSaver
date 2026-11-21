@@ -74,12 +74,12 @@ Do not start a Should feature until all Must features work offline.
 | `Money` | `static String format(long cents)`, `static long parse(String text)` (returns -1 if invalid), `static long roundUpToRinggit(long cents)` (returns the extra cents to add) |
 | `AdminUser` | `new AdminUser(String userId, String name, String baseCurrency, String department)` |
 | `StudentUser` | `new StudentUser(String userId, String name, String baseCurrency, String livingType, boolean hasScholarship, long monthlyBudgetCents)` |
-| `ExpenseTransaction` | `new ExpenseTransaction(String id, long cents, String date, String description, String category, boolean isVerifiedAcademic)` |
-| `SavingsTransaction` | `new SavingsTransaction(String id, long cents, String date, String description, String sourceId, String goalName)` |
+| `ExpenseTransaction` | `new ExpenseTransaction(String id, String userId, long cents, String date, String description, String category, boolean isVerifiedAcademic)` |
+| `SavingsTransaction` | `new SavingsTransaction(String id, String userId, long cents, String date, String description, String sourceId, String goalName)` |
 | `Transaction` | `long getCents()` (replaces `getAmount()`) |
 | `FileService` | `void ensureDataFolder()`, `int loadUsers(User[] users)`, `void saveUsers(User[] users, int count)`, `int loadTransactions(Transaction[] t)`, `void saveTransactions(Transaction[] t, int count)`, `void saveReport(String fileName, String content)` |
 | `UserService` | `StudentUser registerStudent(String name, String livingType, boolean hasScholarship, long budgetCents)`, `AdminUser registerAdmin(String name, String department)`, `User findUserById(String id)`, `User[] getUsers()`, `int getUserCount()`, `void setLoadedCount(int count)` |
-| `TransactionService` | `ExpenseTransaction addExpense(StudentUser u, long cents, String date, String desc, String category, boolean academic)`, `SavingsTransaction addRoundUpSaving(StudentUser u, long expenseCents, String date, String sourceId)`, `long getTotalExpenses(String userId)`, `long getTotalAcademic(String userId)`, `long getTotalSavings(String userId)`, `int searchByKeyword(String keyword, Transaction[] results)`, `boolean deleteById(String id)`, `Transaction[] getTransactions()`, `int getTransactionCount()`, `void setLoadedCount(int count)` |
+| `TransactionService` | `ExpenseTransaction addExpense(StudentUser u, long cents, String date, String desc, String category, boolean academic) throws LowRunwayException`, `SavingsTransaction addRoundUpSaving(StudentUser u, long expenseCents, String date, String sourceId)`, `long getTotalExpenses(String userId)`, `long getTotalAcademic(String userId)`, `long getTotalSavings(String userId)`, `int searchByKeyword(String keyword, Transaction[] results)`, `boolean deleteById(String id)`, `Transaction[] getTransactions()`, `int getTransactionCount()`, `void setLoadedCount(int count)` |
 | `PredictorService` | `int remainingRunwayDays(StudentUser u, long spentCents, int daysPassed)`, `boolean isOverspending(StudentUser u, long spentCents, int daysPassed)`, `long projectedMonthEnd(long spentCents, int daysPassed)`, `static final int LOW_RUNWAY_DAYS = 14` |
 | `BudgetService` | `BudgetPlan buildFromAI(StudentUser u) ` (falls back to the template on any failure), `boolean totalsHundred(BudgetPlan p)` |
 | `AIHelper` | `static String ask(String prompt) throws AIServiceException` |
@@ -100,6 +100,10 @@ Do not start a Should feature until all Must features work offline.
 - [ ] **Compile:**
   ```
   mkdir out
+    Windows PowerShell:
+  javac --release 17 -d out (Get-ChildItem -Recurse src -Filter *.java).FullName
+
+  Mac/Linux:
   javac --release 17 -d out src/campussaver/*/*.java
   ```
   0 errors.
