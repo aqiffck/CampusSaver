@@ -25,11 +25,11 @@ Rules for all files:
 - Use a classic cast (`(StudentUser) u`), not `instanceof` patterns.
 
 - [ ] `ensureDataFolder()`: `new File("data").mkdirs()` if missing.
-- [ ] **users.txt:** `id|role|name|currency|lang|livingType|scholarship|budgetCents|sponsorId`
+- [ ] **users.txt:** `id|role|name|currency|livingType|scholarship|budgetCents|sponsorId`
   - Student: all columns.
   - Admin: put department in `livingType`, then `false|0|`.
   - Sponsor: `livingType` empty, then `false|0|`.
-  - `saveUsers(User[] users, int count)` and `int loadUsers(User[] users)` rebuild the right subclass from `role`, then `setLanguage(...)` and, for students, `setSponsorId(...)`.
+  - `saveUsers(User[] users, int count)` and `int loadUsers(User[] users)` rebuild the right subclass from `role`, then `loadUsers` and, for students, `setSponsorId(...)`.
 - [ ] **transactions.txt:** `id|type|userId|cents|date|desc|category|isAcademic|goalName`
   - `type` is `EXPENSE` or `SAVINGS`.
   - For `SAVINGS`, put the source in `category` and the goal in `goalName`.
