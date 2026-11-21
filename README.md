@@ -25,7 +25,6 @@ A Java text-menu application (Scanner) that helps students plan their monthly bu
 | Should | **F6** Sponsor Report: academic vs personal spending, saved to a file |
 | Stretch | **F3** Multi-Currency (MYR, USD, SGD) using `rates.txt` |
 
-Languages: English and Malay.
 
 ## How it works
 
