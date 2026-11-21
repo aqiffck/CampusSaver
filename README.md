@@ -59,7 +59,7 @@ Transaction (abstract)  -> ExpenseTransaction, SavingsTransaction
 Other models: SavingsGoal, BudgetPlan
 Services: UserService, TransactionService, BudgetService, PredictorService,
           CurrencyService, FileService, AIService, AIHelper
-Utilities: InputHelper, Messages, Money
+Utilities: InputHelper, Money
 Exceptions: AIServiceException, LowRunwayException
 Main: CampusSaverApp
 ```
