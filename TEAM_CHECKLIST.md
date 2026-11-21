@@ -31,7 +31,6 @@
 | `service/AIService.java` | Member 4 | Update |
 | `service/CurrencyService.java` | Member 3 | To build |
 | `util/InputHelper.java` | Member 3 | To build |
-| `util/Messages.java` (EN/MS) | Member 3 | To build |
 | `util/Money.java` | Member 3 | To build |
 | `main/CampusSaverApp.java` | Member 3 | Update |
 
@@ -117,7 +116,6 @@ Do not start a Should feature until all Must features work offline.
 - [ ] **Low runway:** under 14 days shows the survival plan with safe advice and the disclaimer.
 - [ ] **Roles:** Student, Admin and (if built) Sponsor each see only their own menu and data.
 - [ ] **Report:** sponsor report saved to `data/` and readable. Every number comes from Java.
-- [ ] **Languages:** English and Malay both work on all menus.
 - [ ] **Comments:** every class and key method is commented.
 
 ---
@@ -125,7 +123,7 @@ Do not start a Should feature until all Must features work offline.
 ## 7. File formats (`data/`, pipe-delimited, money in cents)
 
 ```
-users.txt         id|role|name|currency|lang|livingType|scholarship|budgetCents|sponsorId
+users.txt         id|role|name|currency|livingType|scholarship|budgetCents|sponsorId
 transactions.txt  id|type|userId|cents|date|desc|category|isAcademic|goalName
 budgets.txt       userId|category|percent
 goals.txt         goalId|userId|name|targetCents|savedCents
