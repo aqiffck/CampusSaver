@@ -1,6 +1,6 @@
 # Member 4: AI Engine, Budget Setup (F1), Predictor (F2), Runway (F5), Sponsor Report (F6)
 
-**Files:** `service/AIHelper.java`, `service/AIService.java`, `service/BudgetService.java`, `service/PredictorService.java`, `model/BudgetPlan.java`
+**Files:** `service/AIHelper.java`, `service/AIService.java`, `service/BudgetService.java`, `service/PredictorService.java`, `service/CurrencyService.java`, `model/BudgetPlan.java`
 **Branch:** `feature/member4-ai-integration`
 **Rules:** All AI goes through `AIHelper.ask(String)`. Java calculates every number. The AI only writes tips, plans and wording. Money is `long cents`.
 
@@ -38,8 +38,15 @@
 - [ ] `sponsorWordingPrompt(...)`: give the AI only the figures Java calculated (academic, personal, total) and tell it not to change them. Java builds the report numbers and saves it with `FileService.saveReport`.
 - [ ] Every method catches `AIServiceException` and returns the fallback. Replace `instanceof` patterns with classic casts.
 
-## Part 6: Test and push
-- [ ] Compile: `javac --release 17 -d out src/campussaver/*/*.java`
+## Part 6: CurrencyService (F3, Stretch)
+- [ ] Build the `rates.txt` version first. File format: `MYR|1.0000`. Rates are stored scaled by 10000 as `long`, never `double`.
+- [ ] Methods: `loadRates()`, `long convert(long cents, String from, String to)`, `boolean setRate(String code, String rateText)` (also saves the file), `String[] getCodes()`, `int getCount()`.
+- [ ] Missing file: create defaults (MYR, USD, SGD). Unknown currency or bad rate: no crash.
+- [ ] Test: `convert(1000, "MYR", "USD")` with `USD|0.2100` returns `210`.
+- [ ] Live fetching: only after the lecturer approves. Keep `rates.txt` as the offline fallback. Do this last.
+
+## Part 7: Test and push
+- [ ] Compile (Windows PowerShell): `javac --release 17 -d out (Get-ChildItem -Recurse src -Filter *.java).FullName`
 - [ ] Offline test: no `config.txt` gives a fallback, no crash, and a notice in `ai_log.txt`.
 - [ ] Online test: a real key gives a real reply, which is logged.
 - [ ] Bad split test: force a reply that totals 90 and confirm the template is used.
