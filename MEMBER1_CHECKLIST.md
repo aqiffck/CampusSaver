@@ -1,123 +1,47 @@
-# Member 1 Coding Checklist — File Persistence & Admin Role
+# Member 1: File Storage and Admin Role
 
-**Your Files:**
-1. `[NEW]` `src/campussaver/model/AdminUser.java`
-2. `[NEW]` `src/campussaver/service/FileService.java`
+**Files:** `model/AdminUser.java`, `model/SponsorUser.java` (optional), `service/FileService.java`
+**Branch:** `feature/member1-file-storage`
+**Rules:** No `ArrayList`/`HashMap`/`List`. Plain arrays plus `int count`. Money is `long cents`. Follow `TEAM_CHECKLIST.md` section 5 and 7.
 
-**Your Branch Name:** `feature/member1-file-storage`  
-**Golden Rule:** Do NOT use `ArrayList`, `LinkedList`, `HashMap`, or `List`. Work ONLY with plain arrays (`User[]`, `Transaction[]`) + `int count`!
+## Part 1: Start
+- [ ] `git checkout main && git pull origin main`, then `git checkout -b feature/member1-file-storage`
+- [ ] Read `User`, `StudentUser`, `Transaction`, `ExpenseTransaction` (now in cents, with `userId`).
 
----
+## Part 2: AdminUser (do first, to unblock others)
+- [ ] `public class AdminUser extends User` with field `department`.
+- [ ] Constructor `AdminUser(String userId, String name, String baseCurrency, String department)`.
+- [ ] `getDepartment()`, and override `getUserRole()` to return `"ADMIN"`.
+- [ ] `SponsorUser extends User` (optional): constructor `(userId, name, baseCurrency)`, `getUserRole()` returns `"SPONSOR"`.
 
-## Part 1: Before You Start
-- [ ] Run `git checkout main && git pull origin main`
-- [ ] Create your branch: `git checkout -b feature/member1-file-storage`
-- [ ] Read existing files so you know how `User`, `StudentUser`, `Transaction`, and `ExpenseTransaction` work:
-  - `src/campussaver/model/User.java` (has `userId`, `name`, `baseCurrency`, abstract `getUserRole()`)
-  - `src/campussaver/model/StudentUser.java` (has `livingType`, `hasScholarship`, `monthlyBudgetLimit`)
-  - `src/campussaver/model/ExpenseTransaction.java` (note: `toFileFormat()` returns **6 comma-separated columns**: `id,amount,date,description,category,isVerifiedAcademic`)
+## Part 3: FileService
+Constants: `data/users.txt`, `transactions.txt`, `budgets.txt`, `goals.txt`, `templates.txt`.
 
----
+Rules for all files:
+- Delimiter is `|`. Read with `line.split("\\|", -1)`.
+- Before saving any text field (name, description, department), replace `|` with `/`.
+- Skip blank lines. Skip any line with too few columns. Never crash on one bad line (catch `NumberFormatException`).
+- If a file does not exist, return 0 (first run).
+- Use a classic cast (`(StudentUser) u`), not `instanceof` patterns.
 
-## Part 2: Build `AdminUser.java` (Do This FIRST to Unblock Teammates!)
-Create `src/campussaver/model/AdminUser.java`:
-- [ ] Package declaration: `package campussaver.model;`
-- [ ] Class header: `public class AdminUser extends User`
-- [ ] Private field: `private String department;` (e.g., `"Campus Treasurer"`)
-- [ ] Exact constructor:
-  ```java
-  public AdminUser(String userId, String name, String baseCurrency, String department) {
-      super(userId, name, baseCurrency);
-      this.department = department;
-  }
-  ```
-- [ ] Getter: `public String getDepartment() { return department; }`
-- [ ] Override abstract method from `User`:
-  ```java
-  @Override
-  public String getUserRole() {
-      return "ADMIN";
-  }
-  ```
+- [ ] `ensureDataFolder()`: `new File("data").mkdirs()` if missing.
+- [ ] **users.txt:** `id|role|name|currency|lang|livingType|scholarship|budgetCents|sponsorId`
+  - Student: all columns.
+  - Admin: put department in `livingType`, then `false|0|`.
+  - Sponsor: `livingType` empty, then `false|0|`.
+  - `saveUsers(User[] users, int count)` and `int loadUsers(User[] users)` rebuild the right subclass from `role`, then `setLanguage(...)` and, for students, `setSponsorId(...)`.
+- [ ] **transactions.txt:** `id|type|userId|cents|date|desc|category|isAcademic|goalName`
+  - `type` is `EXPENSE` or `SAVINGS`.
+  - For `SAVINGS`, put the source in `category` and the goal in `goalName`.
+  - `saveTransactions(Transaction[] t, int count)` and `int loadTransactions(Transaction[] t)`.
+- [ ] **goals.txt:** `goalId|userId|name|targetCents|savedCents`, with `saveGoals` and `loadGoals`.
+- [ ] **budgets.txt:** `userId|category|percent`, with `saveBudgets` and `loadBudgets`. Use `BudgetPlan.add(category, percent)` when loading, grouped by `userId`.
+- [ ] **templates.txt:** `livingType|category|percent`, with `saveTemplates` and `loadTemplates`. Create a default file with HOSTEL and COMMUTER splits if missing (each totals 100).
+- [ ] `void saveReport(String fileName, String content)`: write to `data/<fileName>`.
+- [ ] Every method catches `IOException` and prints a clear message. Never throws out of the class.
 
----
-
-## Part 3: Build `FileService.java`
-Create `src/campussaver/service/FileService.java` (`package campussaver.service;`).
-
-### A. Folder Setup & Constants
-- [ ] Define file path constants:
-  - `private static final String DATA_DIR = "data";`
-  - `private static final String USERS_FILE = "data/users.txt";`
-  - `private static final String TRANSACTIONS_FILE = "data/transactions.txt";`
-  - `private static final String REPORT_FILE = "data/report.txt";`
-- [ ] Implement `public void ensureDataFolder()`:
-  - Check `File dir = new File(DATA_DIR);` -> if `!dir.exists()`, call `dir.mkdirs();`.
-
-### B. User Save & Load (`data/users.txt`)
-Format per line (7 columns):
-- Student: `STUDENT,U001,Ali,MYR,HOSTEL,true,800.0`
-- Admin: `ADMIN,A001,Aqif,MYR,Campus Treasurer,false,0.0`
-
-- [ ] Implement `public void saveUsers(User[] users, int userCount)`:
-  - Call `ensureDataFolder()`.
-  - Use `try (PrintWriter out = new PrintWriter(new FileWriter(USERS_FILE)))`.
-  - Loop `for (int i = 0; i < userCount; i++)`:
-    - Sanitize `users[i].getName()` by replacing `,` with `;` so commas never break file columns.
-    - If `users[i] instanceof StudentUser s`: write `"STUDENT," + s.getUserId() + "," + safeName + "," + s.getBaseCurrency() + "," + s.getLivingType() + "," + s.isHasScholarship() + "," + s.getMonthlyBudgetLimit()`.
-    - Else if `users[i] instanceof AdminUser a`: write `"ADMIN," + a.getUserId() + "," + safeName + "," + a.getBaseCurrency() + "," + safeDept + ",false,0.0"`.
-  - Catch `IOException` and print a friendly error message (never crash!).
-
-- [ ] Implement `public int loadUsers(User[] users)`:
-  - If `new File(USERS_FILE)` does not exist, return `0`.
-  - Use `try (BufferedReader br = new BufferedReader(new FileReader(USERS_FILE)))`.
-  - Loop `while ((line = br.readLine()) != null)`:
-    - Skip blank lines (`if (line.trim().isEmpty()) continue;`).
-    - Split: `String[] p = line.split(",");`
-    - Guard length (`if (p.length < 7) continue;`) and array capacity (`if (count >= users.length) break;`).
-    - If `"STUDENT".equals(p[0])`: parse `boolean scholarship = Boolean.parseBoolean(p[5]);` and `double limit = Double.parseDouble(p[6]);`, store `new StudentUser(p[1], p[2], p[3], p[4], scholarship, limit)` in `users[count++]`.
-    - Else if `"ADMIN".equals(p[0])`: store `new AdminUser(p[1], p[2], p[3], p[4])` in `users[count++]`.
-  - Wrap parsing in `try/catch (IOException | NumberFormatException e)` so one bad line never crashes startup.
-  - Return `count`.
-
-### C. Transaction Save & Load (`data/transactions.txt`)
-> **Important Check on Existing Code:** `ExpenseTransaction.toFileFormat()` already exists in the repo and returns **6 columns** (`id,amount,date,description,category,isVerifiedAcademic`) without `"EXPENSE,"` at the front. Meanwhile `SavingsTransaction.toFileFormat()` starts with `"SAVINGS,"` (7 columns). Handle both cleanly!
-
-- [ ] Implement `public void saveTransactions(Transaction[] transactions, int count)`:
-  - Call `ensureDataFolder()`.
-  - Loop `for (int i = 0; i < count; i++)`:
-    - If `transactions[i] instanceof ExpenseTransaction`: write `"EXPENSE," + transactions[i].toFileFormat()`.
-    - Else (`SavingsTransaction` already starts with `"SAVINGS,"`): write `transactions[i].toFileFormat()`.
-- [ ] Implement `public int loadTransactions(Transaction[] transactions)`:
-  - If `new File(TRANSACTIONS_FILE)` does not exist, return `0`.
-  - Read line by line, skip empty lines, split by `,`.
-  - If `"EXPENSE".equals(p[0])` and `p.length >= 7`:
-    - `double amt = Double.parseDouble(p[2]);`
-    - `boolean academic = Boolean.parseBoolean(p[6]);`
-    - `transactions[count++] = new ExpenseTransaction(p[1], amt, p[3], p[4], p[5], academic);`
-  - Else if `"SAVINGS".equals(p[0])` and `p.length >= 7`:
-    - *(Wait until Member 2 merges `SavingsTransaction.java` — or ask Member 2 for its exact 6-arg constructor!)*
-    - `double amt = Double.parseDouble(p[2]);`
-    - `transactions[count++] = new SavingsTransaction(p[1], amt, p[3], p[4], p[5], p[6]);`
-  - Return `count`.
-
-### D. Admin Report Export (`data/report.txt`)
-- [ ] Implement `public void saveReport(String reportContent)`:
-  - Call `ensureDataFolder()`.
-  - Write `reportContent` to `REPORT_FILE` (`data/report.txt`) using `PrintWriter`.
-
----
-
-## Part 4: Self-Test Before Pushing
-- [ ] Test compiling your files from `CampusSaver/` root:
-  ```bash
-  javac --release 17 -d out src/campussaver/model/User.java src/campussaver/model/StudentUser.java src/campussaver/model/AdminUser.java src/campussaver/model/Transaction.java src/campussaver/model/ExpenseTransaction.java src/campussaver/model/SavingsTransaction.java src/campussaver/service/FileService.java
-  ```
-- [ ] Verify you have **0** imports from `java.util.ArrayList`, `java.util.List`, or `java.util.HashMap`.
-- [ ] Commit & push ONLY your own files (`AdminUser.java`, `FileService.java`):
-  ```bash
-  git add src/campussaver/model/AdminUser.java src/campussaver/service/FileService.java
-  git commit -m "Add AdminUser model and FileService .txt persistence"
-  git push -u origin feature/member1-file-storage
-  ```
-- [ ] Open Pull Request on GitHub and tell Member 2 & Member 3 when `AdminUser` and `FileService` are merged!
+## Part 4: Test and push
+- [ ] Compile: `javac --release 17 -d out src/campussaver/*/*.java`
+- [ ] Write a small test: save, reload and compare user and transaction counts. Add a line with a missing column and confirm it is skipped.
+- [ ] Zero collection imports.
+- [ ] `git add` your own files only, commit, push, open a PR, and tell Members 2 and 3 once `AdminUser` and `FileService` are merged.
