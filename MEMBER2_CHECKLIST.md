@@ -43,7 +43,7 @@
 - [ ] Accessors: `getTransactions()`, `getTransactionCount()`.
 
 ## Part 5: Test and push
-- [ ] Compile: `javac --release 17 -d out src/campussaver/*/*.java`
+- [ ] Compile (Windows PowerShell): `javac --release 17 -d out (Get-ChildItem -Recurse src -Filter *.java).FullName`
 - [ ] Test: RM 7.40 (740 cents) round-up gives 60 cents. RM 10.00 gives `null`.
 - [ ] Test: delete the first, middle and last items. Test an expense of 0 and a negative amount.
 - [ ] Zero collection imports.
