@@ -29,7 +29,7 @@
 | `service/PredictorService.java` | Member 4 | To build |
 | `service/AIHelper.java` | Member 4 | To build |
 | `service/AIService.java` | Member 4 | Update |
-| `service/CurrencyService.java` | Member 3 | To build |
+| `service/CurrencyService.java` | Member 4 | To build |
 | `util/InputHelper.java` | Member 3 | To build |
 | `util/Money.java` | Member 3 | To build |
 | `main/CampusSaverApp.java` | Member 3 | Update |
@@ -83,7 +83,7 @@ Do not start a Should feature until all Must features work offline.
 | `BudgetService` | `BudgetPlan buildFromAI(StudentUser u) ` (falls back to the template on any failure), `boolean totalsHundred(BudgetPlan p)` |
 | `AIHelper` | `static String ask(String prompt) throws AIServiceException` |
 | `AIService` | `String budgetSplitPrompt(...)`, `String tipsPrompt(...)`, `String survivalPlanPrompt(...)`, `String sponsorWordingPrompt(...)`, plus fallback text methods. Each catches `AIServiceException` and returns the fallback. |
-| `CurrencyService` | `long convert(long cents, String from, String to)`, `void loadRates()` |
+| `CurrencyService` | `void loadRates()`, `long convert(long cents, String from, String to)`, `boolean setRate(String code, String rateText)`, `String[] getCodes()`, `int getCount()` |
 | `InputHelper` | `int readInt(Scanner sc, String prompt, int min, int max)`, `long readMoney(Scanner sc, String prompt)`, `String readNonEmpty(Scanner sc, String prompt)`, `boolean readYesNo(Scanner sc, String prompt)` |
 
 **Notes**
