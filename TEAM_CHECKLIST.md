@@ -1,95 +1,133 @@
-# CampusSaver — Master Team Build Checklist & Integration Guide
+# CampusSaver: Master Team Checklist
 
-> **Synced to repo commit:** `feb1c9b` (`origin/main`)  
-> **Java Version:** **JDK 17+** *(required because `AIService.java` uses Java 16+ `instanceof` pattern matching)*  
-> **Rule #1 (WIX1002):** Zero `ArrayList`, `LinkedList`, `HashMap`, or `List` anywhere in `src/`. Plain arrays (`User[]`, `Transaction[]`) + `int count` only!
-
----
-
-## 1. Current Repo Status (`src/campussaver/`)
-
-| File | Owner | Current Status | Notes |
-| :--- | :--- | :---: | :--- |
-| `exception/AIServiceException.java` | Shared | Done | Checked exception (`extends Exception`) |
-| `exception/LowRunwayException.java` | Shared | Done | Checked exception (`extends Exception`) |
-| `model/User.java` | Shared | Done | Abstract parent (`userId`, `name`, `baseCurrency`) |
-| `model/StudentUser.java` | Shared | Done | Subclass 1 (`livingType`, `hasScholarship`, `monthlyBudgetLimit`) |
-| `model/Transaction.java` | Shared | Done | Abstract parent (`id`, `amount`, `date`, `description`) |
-| `model/ExpenseTransaction.java` | Shared | Done | Subclass 1 (`category`, `isVerifiedAcademic`) |
-| `model/AdminUser.java` | **Member 1** | **To Build** | Subclass 2 of `User` |
-| `service/FileService.java` | **Member 1** | **To Build** | Loads/saves `data/users.txt`, `data/transactions.txt`, `data/report.txt` |
-| `model/SavingsTransaction.java` | **Member 2** | **To Build** | Subclass 2 of `Transaction` (Spare-Change Round-Up) |
-| `service/UserService.java` | **Member 2** | **To Build** | Manages `User[]` + `int userCount` |
-| `service/TransactionService.java` | **Member 2** | **To Build** | Manages `Transaction[]` + `int transactionCount` + `LowRunwayException` |
-| `service/AIHelper.java` | **Member 4** | **To Build** | `ask(String)` via `HttpURLConnection`, `config.txt`, manual JSON, `ai_log.txt` |
-| `service/AIService.java` | **Member 4** | **Update Needed** | Plain arrays already done (`feb1c9b`)! Still needs `AIHelper.ask()` + offline fallback |
-| `main/CampusSaverApp.java` | **Member 3** | **Update Stub** | Currently prints 1 line; needs full `Scanner` CLI + Multi-Currency display |
+> **Java:** JDK 17 (`javac --release 17`). Use classic casts, not `instanceof` pattern matching.
+> **Rule #1 (WIX1002):** No `ArrayList`, `LinkedList`, `HashMap`, `HashSet` or `List` anywhere in `src/`. Plain arrays plus an `int` counter only.
+> **Money:** always `long cents`, never `double`. Format only when printing, using `Money.format(long cents)`.
+> **Deadline:** 10 Dec 2026, 11:00 pm.
 
 ---
 
-## 2. Build Order (So Nobody Gets Blocked)
+## 1. Repo status (`src/campussaver/`)
 
-```mermaid
-flowchart LR
-    S1["Stage 1: Models First\nMember 1: AdminUser\nMember 2: SavingsTransaction"] --> S2["Stage 2: Services in Parallel\nMember 1: FileService\nMember 2: UserService & TransactionService\nMember 4: AIHelper + AIService update"]
-    S2 --> S3["Stage 3: CLI Wiring\nMember 3: CampusSaverApp"]
-    S3 --> S4["Stage 4: Full Team Testing\nCompile, Offline Test, Restart Test"]
+| File | Owner | Status |
+| :--- | :--- | :---: |
+| `exception/AIServiceException.java` | Shared | Done |
+| `exception/LowRunwayException.java` | Shared | Done |
+| `model/User.java` (abstract) | Shared | Done |
+| `model/StudentUser.java` | Shared | Update to cents |
+| `model/Transaction.java` (abstract) | Shared | Update to cents |
+| `model/ExpenseTransaction.java` | Shared | Update to cents |
+| `model/AdminUser.java` | Member 1 | To build |
+| `model/SponsorUser.java` (optional) | Member 1 | To build |
+| `model/SavingsTransaction.java` | Member 2 | To build |
+| `model/SavingsGoal.java` | Member 2 | To build |
+| `model/BudgetPlan.java` | Member 4 | To build |
+| `service/FileService.java` | Member 1 | To build |
+| `service/UserService.java` | Member 2 | To build |
+| `service/TransactionService.java` | Member 2 | To build |
+| `service/BudgetService.java` | Member 4 | To build |
+| `service/PredictorService.java` | Member 4 | To build |
+| `service/AIHelper.java` | Member 4 | To build |
+| `service/AIService.java` | Member 4 | Update |
+| `service/CurrencyService.java` | Member 3 | To build |
+| `util/InputHelper.java` | Member 3 | To build |
+| `util/Messages.java` (EN/MS) | Member 3 | To build |
+| `util/Money.java` | Member 3 | To build |
+| `main/CampusSaverApp.java` | Member 3 | Update |
+
+---
+
+## 2. Feature tiers
+
+- **Must:** F1 Smart AI Budget Setup, F2 Spending Predictor and Alerts, F5 Cash Runway and Survival Plan
+- **Should:** F4 Spare-Change Savings Bucket, F6 Sponsor Report Builder
+- **Stretch:** F3 Multi-Currency (`rates.txt` first; live fetch only if the lecturer approves)
+
+Do not start a Should feature until all Must features work offline.
+
+---
+
+## 3. Role rules
+
+- **Student:** add, search and delete own expenses, set budget, view predictions, runway and plan, manage goals, generate the sponsor report.
+- **Admin:** manage users, default split templates, currency rates, view aggregate stats. Cannot see individual transactions.
+- **Sponsor (optional):** read-only report for linked students only.
+
+---
+
+## 4. Build order
+
+| Days | Work |
+| :--- | :--- |
+| 1-3 | **Stage 1:** shared models in cents, `AdminUser`, `SavingsTransaction`, file formats (section 7) on `main` |
+| 4-7 | **Stage 2:** services in parallel. Must features work offline by Day 7. |
+| 8-14 | **Stage 3:** CLI wiring, role menus, EN/MS, F4, F6. **Code freeze on Day 14** except bug fixes. |
+| 15-17 | **Stage 4:** full-team tests, rule checks (section 6) |
+| 18-19 | Docs, SDG text, pitch and demo script, submit with buffer |
+
+---
+
+## 5. Locked method signatures (do NOT rename)
+
+| Class | Signatures |
+| :--- | :--- |
+| `Money` | `static String format(long cents)`, `static long parse(String text)` (returns -1 if invalid), `static long roundUpToRinggit(long cents)` (returns the extra cents to add) |
+| `AdminUser` | `new AdminUser(String userId, String name, String baseCurrency, String department)` |
+| `StudentUser` | `new StudentUser(String userId, String name, String baseCurrency, String livingType, boolean hasScholarship, long monthlyBudgetCents)` |
+| `ExpenseTransaction` | `new ExpenseTransaction(String id, long cents, String date, String description, String category, boolean isVerifiedAcademic)` |
+| `SavingsTransaction` | `new SavingsTransaction(String id, long cents, String date, String description, String sourceId, String goalName)` |
+| `Transaction` | `long getCents()` (replaces `getAmount()`) |
+| `FileService` | `void ensureDataFolder()`, `int loadUsers(User[] users)`, `void saveUsers(User[] users, int count)`, `int loadTransactions(Transaction[] t)`, `void saveTransactions(Transaction[] t, int count)`, `void saveReport(String fileName, String content)` |
+| `UserService` | `StudentUser registerStudent(String name, String livingType, boolean hasScholarship, long budgetCents)`, `AdminUser registerAdmin(String name, String department)`, `User findUserById(String id)`, `User[] getUsers()`, `int getUserCount()`, `void setLoadedCount(int count)` |
+| `TransactionService` | `ExpenseTransaction addExpense(StudentUser u, long cents, String date, String desc, String category, boolean academic)`, `SavingsTransaction addRoundUpSaving(StudentUser u, long expenseCents, String date, String sourceId)`, `long getTotalExpenses(String userId)`, `long getTotalAcademic(String userId)`, `long getTotalSavings(String userId)`, `int searchByKeyword(String keyword, Transaction[] results)`, `boolean deleteById(String id)`, `Transaction[] getTransactions()`, `int getTransactionCount()`, `void setLoadedCount(int count)` |
+| `PredictorService` | `int remainingRunwayDays(StudentUser u, long spentCents, int daysPassed)`, `boolean isOverspending(StudentUser u, long spentCents, int daysPassed)`, `long projectedMonthEnd(long spentCents, int daysPassed)`, `static final int LOW_RUNWAY_DAYS = 14` |
+| `BudgetService` | `BudgetPlan buildFromAI(StudentUser u) ` (falls back to the template on any failure), `boolean totalsHundred(BudgetPlan p)` |
+| `AIHelper` | `static String ask(String prompt) throws AIServiceException` |
+| `AIService` | `String budgetSplitPrompt(...)`, `String tipsPrompt(...)`, `String survivalPlanPrompt(...)`, `String sponsorWordingPrompt(...)`, plus fallback text methods. Each catches `AIServiceException` and returns the fallback. |
+| `CurrencyService` | `long convert(long cents, String from, String to)`, `void loadRates()` |
+| `InputHelper` | `int readInt(Scanner sc, String prompt, int min, int max)`, `long readMoney(Scanner sc, String prompt)`, `String readNonEmpty(Scanner sc, String prompt)`, `boolean readYesNo(Scanner sc, String prompt)` |
+
+**Notes**
+- `LowRunwayException` is thrown **after** the expense is saved, so the warning never loses data.
+- Java calculates every number. The AI only writes tips, plans and wording.
+- Survival plan must never advise skipping meals, must point to the university financial aid office, and must end with: "General guidance, not financial advice."
+- Spare-change is virtual. Say "tracks savings".
+
+---
+
+## 6. Final checks (whole team, Days 15-17)
+
+- [ ] **Compile:**
+  ```
+  mkdir out
+  javac --release 17 -d out src/campussaver/*/*.java
+  ```
+  0 errors.
+- [ ] **No collections:** search `src/` for `ArrayList`, `LinkedList`, `HashMap`, `HashSet`, `java.util.List`. 0 matches.
+- [ ] **10+ classes:** abstract `User` and `Transaction`, each with 2+ subclasses and overridden methods.
+- [ ] **Bad input:** letters where numbers are expected, empty input, negative money, huge numbers. No crash.
+- [ ] **Offline AI:** delete or rename `config.txt` and disconnect Wi-Fi. `AIServiceException` is caught, the fallback shows, the app keeps running, and the notice goes in `ai_log.txt`.
+- [ ] **Live AI:** real key in `config.txt`, reply is shown and appended to `ai_log.txt`. Run `git status` and confirm `config.txt` is not tracked.
+- [ ] **Split check:** force a bad AI reply (total not 100). The template fallback is used.
+- [ ] **Restart persistence:** save, exit, rerun. Users, expenses, budgets and goals reload.
+- [ ] **Low runway:** under 14 days shows the survival plan with safe advice and the disclaimer.
+- [ ] **Roles:** Student, Admin and (if built) Sponsor each see only their own menu and data.
+- [ ] **Report:** sponsor report saved to `data/` and readable. Every number comes from Java.
+- [ ] **Languages:** English and Malay both work on all menus.
+- [ ] **Comments:** every class and key method is commented.
+
+---
+
+## 7. File formats (`data/`, pipe-delimited, money in cents)
+
+```
+users.txt         id|role|name|currency|lang|livingType|scholarship|budgetCents|sponsorId
+transactions.txt  id|type|userId|cents|date|desc|category|isAcademic|goalName
+budgets.txt       userId|category|percent
+goals.txt         goalId|userId|name|targetCents|savedCents
+templates.txt     livingType|category|percent
+rates.txt         MYR|1.0000   USD|0.2100   SGD|0.2900
+ai_log.txt        timestamp|feature|PROMPT|...|REPLY|...   (append only)
 ```
 
-- **Day 1–2 (Stage 1):** Member 1 merges `AdminUser.java`; Member 2 merges `SavingsTransaction.java`. *(Once those two small files are on `main`, nobody is blocked!)*
-- **Day 3–6 (Stage 2):** Member 1 builds `FileService`, Member 2 builds `UserService` + `TransactionService`, Member 4 builds `AIHelper` + updates `AIService`.
-- **Day 7–10 (Stage 3):** Member 3 wires all services inside `CampusSaverApp.java`.
-- **Day 11+ (Stage 4):** Whole team runs the End-to-End Integration Checklist below.
-
----
-
-## 3. Individual Member Checklists
-
-Open your own file and check off every box one by one:
-- [ ] **Member 1 (Storage & Admin):** [MEMBER1_CHECKLIST.md](checklists/MEMBER1_CHECKLIST.md) — `AdminUser.java`, `FileService.java`
-- [ ] **Member 2 (Core Engine & Round-Up):** [MEMBER2_CHECKLIST.md](checklists/MEMBER2_CHECKLIST.md) — `SavingsTransaction.java`, `UserService.java`, `TransactionService.java`
-- [ ] **Member 3 (Scanner CLI & Currency):** [MEMBER3_CHECKLIST.md](checklists/MEMBER3_CHECKLIST.md) — `CampusSaverApp.java`
-- [ ] **Member 4 (AI Helper & Insights):** [MEMBER4_CHECKLIST.md](checklists/MEMBER4_CHECKLIST.md) — `AIHelper.java`, `AIService.java`
-
----
-
-## 4. Locked Shared Method Signatures (Do NOT Rename!)
-
-If everyone uses these exact method names and parameters, all 4 branches will compile cleanly together:
-
-| Class | Exact Method Signatures Other Members Call |
-| :--- | :--- |
-| `AdminUser` | `new AdminUser(String userId, String name, String baseCurrency, String department)` |
-| `SavingsTransaction` | `new SavingsTransaction(String id, double amount, String date, String description, String sourceType, String goalName)` |
-| `FileService` | `ensureDataFolder()`, `int loadUsers(User[] users)`, `void saveUsers(User[] users, int userCount)`, `int loadTransactions(Transaction[] transactions)`, `void saveTransactions(Transaction[] transactions, int count)`, `void saveReport(String reportContent)` |
-| `UserService` | `StudentUser registerStudent(String name, String livingType, boolean hasScholarship, double budgetLimit)`, `AdminUser registerAdmin(String name, String department)`, `User findUserById(String userId)`, `User[] getUsers()`, `int getUserCount()`, `void setLoadedCount(int count)` |
-| `TransactionService` | `ExpenseTransaction addExpense(StudentUser user, double amount, String date, String description, String category, boolean isAcademic) throws LowRunwayException`, `SavingsTransaction addRoundUpSaving(double expenseAmount, String date, String sourceDesc)`, `double getTotalExpenses()`, `double getTotalAcademicExpenses()`, `double getTotalSavings()`, `int searchByKeyword(String keyword, Transaction[] results)`, `boolean deleteById(String id)`, `Transaction[] getTransactions()`, `int getTransactionCount()`, `void setLoadedCount(int count)` |
-| `AIHelper` | `String ask(String prompt) throws AIServiceException` |
-| `AIService` | `double calculateAcademicRatio(Transaction[] transactions, int count) throws AIServiceException`, `int calculateRemainingRunwayDays(StudentUser user, Transaction[] transactions, int count, int daysPassedInMonth) throws AIServiceException`, `String generateFinancialAdvice(StudentUser user, Transaction[] transactions, int count, int daysPassedInMonth) throws AIServiceException` |
-
----
-
-## 5. Final Integration & WIX1002 Rubric Verification (Whole Team)
-
-Run these checks together after merging all 4 branches into `main`:
-
-- [ ] **Clean Compile Check (from `CampusSaver/` root):**
-  ```bash
-  mkdir out
-  javac --release 17 -d out src/campussaver/exception/*.java src/campussaver/model/*.java src/campussaver/service/*.java src/campussaver/main/*.java
-  ```
-  Must finish with **0 errors**.
-- [ ] **Zero-Collections Check (WIX1002 Hard Rule):**
-  Search `src/` for `ArrayList`, `LinkedList`, `HashMap`, `HashSet`, or `java.util.List` — must return **0 matches**.
-- [ ] **Test 1 — First-Run Onboarding & Low Runway Warning:**
-  Delete `data/` folder, run `java -cp out campussaver.main.CampusSaverApp`, create a `StudentUser` (`budget = 100.0`), add an expense of `90.0` -> verify `LowRunwayException` prints a clear warning without crashing, then add `Y` for Spare-Change Round-Up on an expense like `7.40` -> verify `RM 0.60` `SavingsTransaction` is added.
-- [ ] **Test 2 — Restart Persistence:**
-  Choose Option 6 (`Save & Exit`), verify `data/users.txt` and `data/transactions.txt` exist, re-run the program, and verify your user and transactions reload automatically in Option 2!
-- [ ] **Test 3 — Multi-Currency & Search/Delete:**
-  Switch display currency in Option 2 (`MYR` -> `USD` / `SGD` / `IDR`), then search and delete a transaction in Option 3 without leaving `null` crashes in Option 2.
-- [ ] **Test 4 — Offline AI Fallback (`AIServiceException`):**
-  Remove/rename `config.txt` (or disconnect Wi-Fi) -> run Option 4 -> confirm `AIHelper` throws `AIServiceException`, `CampusSaverApp` / `AIService` catches it cleanly, displays offline math advice, and logs the notice in `data/ai_log.txt`.
-- [ ] **Test 5 — Live AI Test + Key Safety:**
-  Copy `config.example.txt` to `config.txt`, insert real API key, run Option 4 -> verify real AI reply prints AND appends to `data/ai_log.txt`. Run `git status` and confirm `config.txt` is **NOT** tracked by Git.
-- [ ] **Test 6 — Admin Report (`report.txt`):**
-  Log in as `AdminUser` -> run Option 5 -> verify `data/report.txt` is generated and readable.
+Reports are saved as `data/report_<userId>.txt`. `config.txt` (root, gitignored) holds `API_KEY=...`.
