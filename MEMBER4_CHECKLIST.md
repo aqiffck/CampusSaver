@@ -37,7 +37,6 @@
 - [ ] `survivalPlanPrompt(...)`: no unhealthy advice (never skipping meals), point to the university financial aid office, end with "General guidance, not financial advice." Fallback text has the same content.
 - [ ] `sponsorWordingPrompt(...)`: give the AI only the figures Java calculated (academic, personal, total) and tell it not to change them. Java builds the report numbers and saves it with `FileService.saveReport`.
 - [ ] Every method catches `AIServiceException` and returns the fallback. Replace `instanceof` patterns with classic casts.
-- [ ] Prompts ask for the reply in the user's language (English or Malay).
 
 ## Part 6: Test and push
 - [ ] Compile: `javac --release 17 -d out src/campussaver/*/*.java`
