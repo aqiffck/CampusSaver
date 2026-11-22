@@ -1,6 +1,6 @@
 # CampusSaver: Smart Budget Planner for University Students
 
-A Java text-menu application (Scanner) that helps students plan their monthly budget, track spending, and avoid running out of cash before the month ends. Built for the WIX1002 group assignment and the FOP Hackathon, **Track 8 (Fintech)**.
+A Java application with an HTML/CSS/JavaScript browser frontend and a Java backend that helps students plan their monthly budget, track spending, and avoid running out of cash before the month ends. Built for the WIX1002 group assignment and the FOP Hackathon, **Track 8 (Fintech)**.
 
 **Team:** [Member 1], [Member 2], [Member 3], [Member 4] | **Due:** 10 Dec 2026, 11:00 pm
 
@@ -23,8 +23,7 @@ A Java text-menu application (Scanner) that helps students plan their monthly bu
 | Must | **F5** Cash Runway and Survival Plan: days of cash left; plan shown if under 14 days |
 | Should | **F4** Spare-Change Savings Bucket: rounds expenses up to the next Ringgit and *tracks* the savings in goals (virtual) |
 | Should | **F6** Sponsor Report: academic vs personal spending, saved to a file |
-| Stretch | **F3** Multi-Currency (MYR, USD, SGD) using `rates.txt` |
-
+| Stretch | **F3** Multi-Currency (MYR, USD, SGD): live rates fetched by `CurrencyService`, saved to `rates.txt`, with `rates.txt` as the fallback if there is no internet |
 
 ## How it works
 
@@ -32,7 +31,7 @@ A Java text-menu application (Scanner) that helps students plan their monthly bu
 
 ```
 Add expense
-  Scanner menu (CampusSaverApp) -> InputHelper validates input
+    Web page (web/) -> WebServer -> InputHelper validates input
   -> TransactionService saves expense in Transaction[] (cents)
   -> optional round-up -> SavingsTransaction into a SavingsGoal
   -> if budget almost gone: LowRunwayException (after saving) -> warning shown
@@ -61,7 +60,7 @@ Services: UserService, TransactionService, BudgetService, PredictorService,
           CurrencyService, FileService, AIService, AIHelper
 Utilities: InputHelper, Money
 Exceptions: AIServiceException, LowRunwayException
-Main: CampusSaverApp
+Main: CampusSaverApp (terminal test menu), WebServer (connects web/ pages to services)
 ```
 
 ## Project rules
@@ -71,6 +70,8 @@ Main: CampusSaverApp
 - Missing key or no internet means `AIServiceException`, a fallback message, and the program keeps running.
 - Every AI reply is appended to `data/ai_log.txt`.
 - Invalid input never crashes the app.
+- - Frontend: plain HTML, CSS and JavaScript in `web/`, served by `WebServer` (`com.sun.net.httpserver.HttpServer`). All logic, validation and file I/O stay in Java.
+- Service classes never use `Scanner` or `System.out`. They take parameters and return values or throw exceptions.
 
 ## Setup (for evaluators)
 1. Requires **JDK 17 or newer**.
@@ -85,9 +86,6 @@ Main: CampusSaverApp
    - Windows PowerShell: `javac --release 17 -d out (Get-ChildItem -Recurse src -Filter *.java).FullName`
    - Mac/Linux: `javac --release 17 -d out src/campussaver/*/*.java`
 4. Run from the project root (so `data/` is created there):
-   ```
-   java -cp out campussaver.main.CampusSaverApp
-   ```
 
 ## Data files (`data/`)
 See `TEAM_CHECKLIST.md` section 7 for the exact column layout of `users.txt`, `transactions.txt`, `budgets.txt`, `goals.txt`, `templates.txt`, `rates.txt` and `ai_log.txt`.
