@@ -1,8 +1,8 @@
-# Member 3: Scanner CLI, Safe Input and Currency
+# Member 3: Web Frontend (HTML/CSS/JS), Safe Input and Currency
 
-**Files:** `main/CampusSaverApp.java`, `util/InputHelper.java`, `util/Money.java`
+**Files:** `web/` (HTML, CSS, JS), `main/CampusSaverApp.java` (terminal test menu), `util/InputHelper.java`, `util/Money.java`
 **Branch:** `feature/member3-cli-ui`
-**Rule:** The menu must never crash on letters, empty input, negative or huge numbers, or on `LowRunwayException` and `AIServiceException`.
+**Rule:** The pages and the menu must never crash on letters, empty input, negative or huge numbers, or on `LowRunwayException` and `AIServiceException`. Never trust the browser: validate again in Java. Plain HTML, CSS and JS only (no frameworks, no npm). Branch: `member3/web`.
 
 ## Part 1: Start
 - [ ] `git checkout main && git pull origin main`, then `git checkout -b feature/member3-cli-ui`
@@ -26,7 +26,7 @@
 - [ ] First run: register a student (name, HOSTEL or COMMUTER, scholarship Y/N, monthly budget) and offer to create an admin.
 - [ ] Returning run: list accounts, pick one, or register a new account.
 
-## Part 5: Menus per role (call the services, keep logic out of the menu)
+## Part 5: Role pages (call the services through WebServer, keep logic out of the pages)
 **Student**
 1. Add expense, then ask about round-up into a goal
 2. Summary, with currency switch
