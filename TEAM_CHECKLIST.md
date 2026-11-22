@@ -32,7 +32,9 @@
 | `service/CurrencyService.java` | Member 4 | To build |
 | `util/InputHelper.java` | Member 3 | To build |
 | `util/Money.java` | Member 3 | To build |
-| `main/CampusSaverApp.java` | Member 3 | Update |
+| `main/CampusSaverApp.java` | Member 3 | Update (terminal test menu) |
+| `main/WebServer.java` | Member 4 | New (HttpServer, connects web/ to services) |
+| `web/` (HTML, CSS, JS) | Member 3 | New |
 
 ---
 
@@ -40,7 +42,7 @@
 
 - **Must:** F1 Smart AI Budget Setup, F2 Spending Predictor and Alerts, F5 Cash Runway and Survival Plan
 - **Should:** F4 Spare-Change Savings Bucket, F6 Sponsor Report Builder
-- **Stretch:** F3 Multi-Currency (`rates.txt` first; live fetch only if the lecturer approves)
+- **Stretch:** F3 Multi-Currency (`rates.txt` first, then live fetch. The lecturer approved it: standard Java only, plain arrays, fall back to `rates.txt` if the request fails)
 
 Do not start a Should feature until all Must features work offline.
 
@@ -60,7 +62,7 @@ Do not start a Should feature until all Must features work offline.
 | :--- | :--- |
 | 1-3 | **Stage 1:** shared models in cents, `AdminUser`, `SavingsTransaction`, file formats (section 7) on `main` |
 | 4-7 | **Stage 2:** services in parallel. Must features work offline by Day 7. |
-| 8-14 | **Stage 3:** CLI wiring, role menus, F4, F6. **Code freeze on Day 14** except bug fixes. |
+| 8-14 | **Stage 3:** web frontend (`web/` + `WebServer`), role pages, F4, F6. **Code freeze on Day 14** except bug fixes. |
 | 15-17 | **Stage 4:** full-team tests, rule checks (section 6) |
 | 18-19 | Docs, SDG text, pitch and demo script, submit with buffer |
 
@@ -85,8 +87,9 @@ Do not start a Should feature until all Must features work offline.
 | `AIService` | `String budgetSplitPrompt(...)`, `String tipsPrompt(...)`, `String survivalPlanPrompt(...)`, `String sponsorWordingPrompt(...)`, plus fallback text methods. Each catches `AIServiceException` and returns the fallback. |
 | `CurrencyService` | `void loadRates()`, `long convert(long cents, String from, String to)`, `boolean setRate(String code, String rateText)`, `String[] getCodes()`, `int getCount()` |
 | `InputHelper` | `int readInt(Scanner sc, String prompt, int min, int max)`, `long readMoney(Scanner sc, String prompt)`, `String readNonEmpty(Scanner sc, String prompt)`, `boolean readYesNo(Scanner sc, String prompt)` |
-
+- Web input: the browser sends text, so `InputHelper` also gets String versions (e.g. `parseInt(String s, int min, int max)`, `parseMoney(String s)`) that throw an exception on bad input. The Scanner versions above stay. Adding methods is fine, renaming is not.
 **Notes**
+  
 - `LowRunwayException` is thrown **after** the expense is saved, so the warning never loses data.
 - Java calculates every number. The AI only writes tips, plans and wording.
 - Survival plan must never advise skipping meals, must point to the university financial aid office, and must end with: "General guidance, not financial advice."
@@ -114,7 +117,7 @@ Do not start a Should feature until all Must features work offline.
 - [ ] **Split check:** force a bad AI reply (total not 100). The template fallback is used.
 - [ ] **Restart persistence:** save, exit, rerun. Users, expenses, budgets and goals reload.
 - [ ] **Low runway:** under 14 days shows the survival plan with safe advice and the disclaimer.
-- [ ] **Roles:** Student, Admin and (if built) Sponsor each see only their own menu and data.
+- [ ] **Roles:** Student, Admin and (if built) Sponsor each see only their own pages and data.
 - [ ] **Report:** sponsor report saved to `data/` and readable. Every number comes from Java.
 - [ ] **Comments:** every class and key method is commented.
 
