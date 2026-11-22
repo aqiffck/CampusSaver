@@ -43,7 +43,7 @@
 - [ ] Methods: `loadRates()`, `long convert(long cents, String from, String to)`, `boolean setRate(String code, String rateText)` (also saves the file), `String[] getCodes()`, `int getCount()`.
 - [ ] Missing file: create defaults (MYR, USD, SGD). Unknown currency or bad rate: no crash.
 - [ ] Test: `convert(1000, "MYR", "USD")` with `USD|0.2100` returns `210`.
-- [ ] Live fetching: only after the lecturer approves. Keep `rates.txt` as the offline fallback. Do this last.
+- [ ] Live fetching (approved by the lecturer): `HttpURLConnection` only, plain arrays, save to `rates.txt` on success, fall back to `rates.txt` on any failure (catch a `RateFetchException`). Do this last. Explain it in the report and video.
 
 ## Part 7: Test and push
 - [ ] Compile (Windows PowerShell): `javac --release 17 -d out (Get-ChildItem -Recurse src -Filter *.java).FullName`
@@ -52,3 +52,4 @@
 - [ ] Bad split test: force a reply that totals 90 and confirm the template is used.
 - [ ] `git status` shows `config.txt` untracked and ignored.
 - [ ] Push your own files only and open a PR.
+- [ ] `main/WebServer.java`: `HttpServer` on port 8080, serves files from `web/`, routes `/api/...` to the services, replies with text or JSON built by string concatenation, catches every exception and returns an error message (never crashes). Build after F1, F2 and F5 work offline (Day 7-10).
