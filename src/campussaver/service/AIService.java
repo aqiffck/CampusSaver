@@ -8,7 +8,6 @@ import campussaver.util.Money;
 
 /** Spending analysis. Java calculates every number (cents); AI wording is added by Member 4. */
 public class AIService {
-    public static final int LOW_RUNWAY_DAYS = 14;
 
     public double calculateAcademicRatio(Transaction[] transactions, int count) throws AIServiceException {
         if (transactions == null || count <= 0) {
@@ -63,7 +62,7 @@ public class AIService {
         } else {
             advice.append("Recommendation: good job prioritising academic necessities.\n");
         }
-        if (runway < LOW_RUNWAY_DAYS) {
+                if (runway < PredictorService.LOW_RUNWAY_DAYS) {
             advice.append("Warning: low runway. Your budget may run out in under 14 days.");
         } else {
             advice.append("Status: your spending pace is within safe limits for this month.");

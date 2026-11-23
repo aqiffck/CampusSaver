@@ -2,6 +2,8 @@ package campussaver.model;
 
 /** A student who tracks spending. Budget is in cents. */
 public class StudentUser extends User {
+    public static final String HOSTEL = "HOSTEL";
+    public static final String COMMUTER = "COMMUTER";
     private String livingType; // "HOSTEL" or "COMMUTER"
     private boolean hasScholarship;
     private long monthlyBudgetCents;
