@@ -79,7 +79,7 @@ Main: CampusSaverApp (terminal test menu), WebServer (connects web/ pages to ser
    ```
    API_KEY=your_key_here
    
-   API_MODEL=<Gemini model name from Google AI Studio>
+   API_MODEL=<Groq model name, e.g. openai/gpt-oss-120b>
    ```
    Without a valid key the app still works, using fallback text.
 3. Compile from the project root:
