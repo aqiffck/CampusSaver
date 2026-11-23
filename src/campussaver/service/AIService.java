@@ -4,6 +4,7 @@ import campussaver.exception.AIServiceException;
 import campussaver.model.ExpenseTransaction;
 import campussaver.model.StudentUser;
 import campussaver.model.Transaction;
+import campussaver.util.Money;
 
 /** Spending analysis. Java calculates every number (cents); AI wording is added by Member 4. */
 public class AIService {
@@ -68,5 +69,15 @@ public class AIService {
             advice.append("Status: your spending pace is within safe limits for this month.");
         }
         return advice.toString();
+    }
+
+        /** Prompt only. Java validates the reply, so a bad answer falls back to the template. */
+    public static String budgetSplitPrompt(String livingType, boolean hasScholarship, long budgetCents) {
+        return "You are a budgeting assistant for a Malaysian university student. "
+             + "Living type: " + livingType + ". Scholarship: " + (hasScholarship ? "yes" : "no")
+             + ". Monthly budget: " + Money.format(budgetCents) + ". "
+             + "Suggest a monthly budget split of 4 to 6 categories. Reply with ONLY lines in the "
+             + "format Category|Percent (whole numbers, no symbols), and the percents must total exactly 100. "
+             + "No other text.";
     }
 }
