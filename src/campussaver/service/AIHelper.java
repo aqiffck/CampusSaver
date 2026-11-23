@@ -14,7 +14,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 
 /**
- * The only class that talks to the AI (Google Gemini).
+ * The only class that talks to the AI (Groq).
  * Reads config.txt, sends one prompt with HttpURLConnection, retries once on
  * temporary errors, returns the reply text and logs every reply to data/ai_log.txt.
  * Any failure becomes AIServiceException so callers can show a fallback.
@@ -24,8 +24,8 @@ public class AIHelper {
 
     private static final String CONFIG_FILE = "config.txt";
     private static final String LOG_FILE = "data/ai_log.txt";
-    private static final String BASE_URL =
-            "https://generativelanguage.googleapis.com/v1beta/models/";
+        private static final String API_URL =
+            "https://api.groq.com/openai/v1/chat/completions";
     private static final int MAX_ATTEMPTS = 2;
 
     /** Sends the prompt and returns the AI reply text. */
@@ -40,19 +40,21 @@ public class AIHelper {
             throw new AIServiceException("AI key or model missing in config.txt");
         }
 
-        String body = "{\"contents\":[{\"parts\":[{\"text\":\""
-                + escapeJson(prompt) + "\"}]}]}";
+                String body = "{\"model\":\"" + escapeJson(model)
+                + "\",\"messages\":[{\"role\":\"user\",\"content\":\""
+                + escapeJson(prompt) + "\"}]}";
         String lastError = "unknown error";
 
         for (int attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
             try {
-                URL url = new URL(BASE_URL + model + ":generateContent");
+                URL url = new URL(API_URL);
                 HttpURLConnection c = (HttpURLConnection) url.openConnection();
                 c.setRequestMethod("POST");
                 c.setRequestProperty("Content-Type", "application/json");
-                c.setRequestProperty("x-goog-api-key", key);
+                c.setRequestProperty("Authorization", "Bearer " + key);
+                c.setRequestProperty("User-Agent", "CampusSaver/1.0");
                 c.setDoOutput(true);
-                c.setConnectTimeout(10000);
+                c.setReadTimeout(30000);
                 c.setReadTimeout(20000);
                 try (OutputStream os = c.getOutputStream()) {
                     os.write(body.getBytes("UTF-8"));
@@ -163,9 +165,13 @@ public class AIHelper {
         return sb.toString();
     }
 
-    /** Finds the first "text" value in the reply and unescapes it. Returns null if not found. */
+        /** Finds choices[0].message.content and unescapes it. Returns null if not found. */
     private static String extractText(String json) {
-        int p = json.indexOf("\"text\"");
+        int p = json.indexOf("\"message\"");
+        if (p < 0) {
+            return null;
+        }
+        p = json.indexOf("\"content\"", p);
         if (p < 0) {
             return null;
         }
@@ -173,8 +179,11 @@ public class AIHelper {
         if (p < 0) {
             return null;
         }
-        p = json.indexOf('"', p);
-        if (p < 0) {
+        p++;
+        while (p < json.length() && json.charAt(p) == ' ') {
+            p++;
+        }
+        if (p >= json.length() || json.charAt(p) != '"') {
             return null;
         }
         p++;
