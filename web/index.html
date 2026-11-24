@@ -1,0 +1,1 @@
+﻿<!DOCTYPE html><html><head><meta charset="utf-8"><title>CampusSaver</title></head><body><h1>CampusSaver</h1><p id="s">Checking server...</p><script>fetch("/api/ping").then(r=>r.json()).then(d=>document.getElementById("s").textContent="Server: "+d.status);</script></body></html>
