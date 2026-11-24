@@ -1,11 +1,16 @@
 package campussaver.service;
 
+import campussaver.exception.RateFetchException;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.net.HttpURLConnection;
+import java.net.URL;
 
 /** Currency conversion using data/rates.txt. Rates are 1 MYR in each currency, stored x10000. */
 public class CurrencyService {
@@ -67,7 +72,86 @@ public class CurrencyService {
     }
 
     public int getCount() { return count; }
+        // ---------- F3: live rates (fallback = rates.txt) ----------
+    private static final String RATES_URL = "https://open.er-api.com/v6/latest/MYR";
+    private String lastRefreshMessage = "Rates not refreshed yet.";
 
+    public String getLastRefreshMessage() { return lastRefreshMessage; }
+
+    /** Tries live rates. Never throws: on any failure the current rates (from rates.txt) stay. */
+    public boolean refreshLiveRates() {
+        try {
+            int updated = fetchLiveRates();
+            lastRefreshMessage = "Live rates updated (" + updated + " currencies).";
+            return true;
+        } catch (RateFetchException e) {
+            lastRefreshMessage = "Live rates unavailable (" + e.getMessage() + "). Using saved rates.txt.";
+            return false;
+        }
+    }
+
+    /** Updates the currencies already in the list from the live source and saves rates.txt. Returns how many changed. */
+    public int fetchLiveRates() throws RateFetchException {
+        String json = download().replaceAll("\\s", "");
+        if (json.indexOf("\"result\":\"success\"") < 0) throw new RateFetchException("source reported an error");
+        int start = json.indexOf("\"rates\"");
+        start = start < 0 ? -1 : json.indexOf('{', start);
+        int end = start < 0 ? -1 : json.indexOf('}', start);
+        if (start < 0 || end < 0) throw new RateFetchException("unexpected reply");
+
+        long[] fresh = new long[count];          // 0 = not found in the reply
+        String[] pairs = json.substring(start + 1, end).split(",");
+        for (int i = 0; i < pairs.length; i++) {
+            String[] kv = pairs[i].split(":");
+            if (kv.length != 2) continue;
+            String code = kv[0].replace("\"", "").toUpperCase();
+            int idx = indexOf(code);
+            if (idx < 0 || code.equals("MYR")) continue;
+            long r = parseLiveRate(kv[1]);
+            if (r > 0) fresh[idx] = r;
+        }
+        int updated = 0;
+        for (int i = 0; i < count; i++) {
+            if (fresh[i] > 0) { rates[i] = fresh[i]; updated++; }
+        }
+        if (updated == 0) throw new RateFetchException("no usable rates in reply");
+        saveRates();
+        return updated;
+    }
+
+    private String download() throws RateFetchException {
+        try {
+            HttpURLConnection c = (HttpURLConnection) new URL(RATES_URL).openConnection();
+            c.setRequestMethod("GET");
+            c.setRequestProperty("User-Agent", "CampusSaver/1.0");
+            c.setConnectTimeout(8000);
+            c.setReadTimeout(8000);
+            int code = c.getResponseCode();
+            if (code != 200) throw new RateFetchException("HTTP " + code);
+            StringBuilder sb = new StringBuilder();
+            try (InputStream is = c.getInputStream();
+                 BufferedReader r = new BufferedReader(new InputStreamReader(is, "UTF-8"))) {
+                String line;
+                while ((line = r.readLine()) != null) sb.append(line).append('\n');
+            }
+            return sb.toString();
+        } catch (IOException e) {
+            throw new RateFetchException("network error");
+        }
+    }
+
+    /** "0.23617" -> 2362 (rounded to 4 decimals). Returns -1 if invalid, e.g. scientific notation. */
+    private long parseLiveRate(String text) {
+        String t = text.trim();
+        if (!t.matches("\\d{1,6}(\\.\\d+)?")) return -1;
+        int dot = t.indexOf('.');
+        String whole = dot < 0 ? t : t.substring(0, dot);
+        String frac = dot < 0 ? "" : t.substring(dot + 1);
+        boolean roundUp = frac.length() > 4 && frac.charAt(4) >= '5';
+        while (frac.length() < 4) frac = frac + "0";
+        long r = Long.parseLong(whole) * 10000 + Long.parseLong(frac.substring(0, 4));
+        return roundUp ? r + 1 : r;
+    }
     private boolean addRate(String code, long rate) {
         if (count >= codes.length || code.length() != 3) return false;
         codes[count] = code;
