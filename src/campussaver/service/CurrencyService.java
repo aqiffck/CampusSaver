@@ -39,7 +39,7 @@ public class CurrencyService {
                 if (r > 0) addRate(p[0].trim().toUpperCase(), r);
             }
         } catch (IOException e) {
-            System.out.println("Could not read rates file: " + e.getMessage());
+            // unreadable rates file: keep whatever was loaded; MYR is added below
         }
         if (indexOf("MYR") < 0) addRate("MYR", 10000);
     }
@@ -72,7 +72,8 @@ public class CurrencyService {
     }
 
     public int getCount() { return count; }
-        // ---------- F3: live rates (fallback = rates.txt) ----------
+
+    // ---------- F3: live rates (fallback = rates.txt) ----------
     private static final String RATES_URL = "https://open.er-api.com/v6/latest/MYR";
     private String lastRefreshMessage = "Rates not refreshed yet.";
 
@@ -152,6 +153,7 @@ public class CurrencyService {
         long r = Long.parseLong(whole) * 10000 + Long.parseLong(frac.substring(0, 4));
         return roundUp ? r + 1 : r;
     }
+
     private boolean addRate(String code, long rate) {
         if (count >= codes.length || code.length() != 3) return false;
         codes[count] = code;
@@ -190,7 +192,7 @@ public class CurrencyService {
                 pw.println(codes[i] + "|" + (r / 10000) + "." + frac);
             }
         } catch (IOException e) {
-            System.out.println("Could not save rates file: " + e.getMessage());
+            // saving is best effort: the in-memory rates are still correct
         }
     }
 }
