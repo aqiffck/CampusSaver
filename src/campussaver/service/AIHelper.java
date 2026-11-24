@@ -25,7 +25,7 @@ public class AIHelper {
     private static final String CONFIG_FILE = "config.txt";
     private static final String LOG_FILE = "data/ai_log.txt";
         private static final String API_URL =
-            "https://api.groq.com/openai/v1/chat/completions";
+         "https://api.groq.com/openai/v1/chat/completions";
     private static final int MAX_ATTEMPTS = 2;
 
     /** Sends the prompt and returns the AI reply text. */
@@ -54,7 +54,7 @@ public class AIHelper {
                 c.setRequestProperty("Authorization", "Bearer " + key);
                 c.setRequestProperty("User-Agent", "CampusSaver/1.0");
                 c.setDoOutput(true);
-                c.setReadTimeout(30000);
+                c.setConnectTimeout(30000);
                 c.setReadTimeout(20000);
                 try (OutputStream os = c.getOutputStream()) {
                     os.write(body.getBytes("UTF-8"));
@@ -68,6 +68,7 @@ public class AIHelper {
                     if (text == null || text.trim().isEmpty()) {
                         throw new AIServiceException("AI returned an empty reply");
                     }
+                    text = normalize(text);
                     logReply(text);
                     return text;
                 }
@@ -220,6 +221,16 @@ public class AIHelper {
         }
         return null;
     }
+
+    private static String normalize(String text) {
+    if (text == null) return "";
+    return text
+        .replace('\u2018', '\'').replace('\u2019', '\'')   // curly single quotes
+        .replace('\u201C', '"').replace('\u201D', '"')     // curly double quotes
+        .replace('\u2013', '-').replace('\u2014', '-')     // en/em dash
+        .replace("\u2026", "...")                          // ellipsis
+        .replace('\u00A0', ' ').replace('\u202F', ' ');    // non-breaking spaces
+}
 
     /** Appends one line to data/ai_log.txt. Logging problems never stop the app. */
     private static void logReply(String reply) {
